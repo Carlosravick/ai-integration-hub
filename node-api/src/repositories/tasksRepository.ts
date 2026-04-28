@@ -1,37 +1,82 @@
-interface Task {
+import fs from 'fs/promises';
+import path from 'path';
+
+export interface Task {
   id: number;
   text: string;
   summary: string | null;
+  lang: string;
 }
 
-export class TasksRepository {
-  private tasks: Task[] = [];
-  private currentId: number = 1;
+// tasks.json será salvo na raiz do node-api (junto ao package.json)
+const FILE_PATH = path.resolve(process.cwd(), 'tasks.json');
 
-  createTask(text: string): Task {
+export class TasksRepository {
+  private async readTasks(): Promise<Task[]> {
+    try {
+      const data = await fs.readFile(FILE_PATH, 'utf-8');
+      return JSON.parse(data);
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        // Se o arquivo não existe, retorna array vazio
+        return [];
+      }
+      throw error;
+    }
+  }
+
+  private async writeTasks(tasks: Task[]): Promise<void> {
+    await fs.writeFile(FILE_PATH, JSON.stringify(tasks, null, 2), 'utf-8');
+  }
+
+  async createTask(text: string, lang: string): Promise<Task> {
+    const tasks = await this.readTasks();
+    const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+    
     const task: Task = {
-      id: this.currentId++,
+      id: newId,
       text,
-      summary: null
+      summary: null,
+      lang
     };
-    this.tasks.push(task);
+    
+    tasks.push(task);
+    await this.writeTasks(tasks);
     return task;
   }
 
-  updateTask(id: number, summary: string): Task | null {
-    const taskIndex = this.tasks.findIndex(t => t.id === id);
+  async updateTaskSummary(id: number, summary: string): Promise<Task | null> {
+    const tasks = await this.readTasks();
+    const taskIndex = tasks.findIndex(t => t.id === id);
+    
     if (taskIndex > -1) {
-      this.tasks[taskIndex].summary = summary;
-      return this.tasks[taskIndex];
+      tasks[taskIndex].summary = summary;
+      await this.writeTasks(tasks);
+      return tasks[taskIndex];
     }
+    
     return null;
   }
 
-  getTaskById(id: number): Task | null {
-    return this.tasks.find(t => t.id === id) || null;
+  async getTaskById(id: number): Promise<Task | null> {
+    const tasks = await this.readTasks();
+    return tasks.find(t => t.id === id) || null;
   }
 
-  getAllTasks(): Task[] {
-    return this.tasks;
+  async getAllTasks(): Promise<Task[]> {
+    return await this.readTasks();
+  }
+
+  async deleteTask(id: number): Promise<boolean> {
+    const tasks = await this.readTasks();
+    const initialLength = tasks.length;
+    const filteredTasks = tasks.filter(t => t.id !== id);
+    
+    if (filteredTasks.length < initialLength) {
+      await this.writeTasks(filteredTasks);
+      return true;
+    }
+    
+    return false;
   }
 }
