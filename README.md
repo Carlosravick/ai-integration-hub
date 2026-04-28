@@ -106,3 +106,33 @@ O médico sempre será quem aperta o botão final; e o juiz quem determina se um
 FONTE: https://www.bbc.com/portuguese/articles/c2kx2e74jyxo
 
 # Desejamos um bom desafio! 🚀
+
+---
+
+# Implementação
+
+## O que foi feito
+
+### Node.js (TypeScript/Express)
+- **POST /tasks**: Recebe `text` e `lang`, valida o idioma (`pt`, `en`, `es`), salva a tarefa e envia ao serviço Python para gerar o resumo traduzido.
+- **GET /tasks**: Lista todas as tarefas criadas.
+- **GET /tasks/:id**: Retorna uma tarefa específica com `id`, `text`, `summary` e `lang`.
+- **DELETE /tasks/:id**: Remove uma tarefa pelo ID.
+- **GET /**: Rota raiz retornando `{"message": "API is running"}`.
+- **Persistência**: Tarefas salvas em arquivo `tasks.json` utilizando `fs/promises` (operações assíncronas).
+
+### Python (FastAPI)
+- **POST /summarize**: Recebe `text` e `lang`, utiliza LangChain (`PromptTemplate`) para gerar o resumo traduzido via HuggingFace (modelo Qwen/Qwen2.5-72B-Instruct).
+- **GET /**: Rota raiz retornando `{"message": "API is running"}`.
+
+## Decisões Técnicas
+- **InferenceClient** do `huggingface_hub` para chamadas à API de IA (mais estável que a compatibilidade OpenAI).
+- **Ambiente virtual** (`.venv`) para isolar dependências Python.
+- **Variáveis de ambiente** (`.env`) para proteger o token do HuggingFace.
+- **Testes automatizados** com Jest + Supertest (13 testes cobrindo todos os endpoints).
+
+## Como Rodar os Testes
+```bash
+cd node-api
+npm test
+```
