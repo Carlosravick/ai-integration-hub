@@ -8,38 +8,45 @@ install_node() {
     cd - || exit
 }
 
-# Função para instalar dependências do Python
+# Função para ativar o ambiente virtual de forma compatível
+activate_venv() {
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+        source .venv/Scripts/activate
+    else
+        source .venv/bin/activate
+    fi
+}
+
+# Função para instalar dependências do Python de forma segura (com venv)
 install_python() {
     echo "Instalando dependências do Python..."
+    # Cria o ambiente virtual na raiz do projeto, se não existir
+    if [ ! -d ".venv" ]; then
+        python -m venv .venv
+    fi
+    
+    # Ativa o ambiente para isolar a instalação
+    activate_venv
+    
     cd python-llm || exit
     pip install -r requirements.txt
     cd - || exit
 }
 
-# Função para executar o modo de desenvolvimento do Node.js
-dev_node() {
-    echo "Iniciando servidor Node.js no modo de desenvolvimento..."
+# Função para executar o servidor Node.js
+start_node() {
+    echo "Iniciando servidor Node.js..."
     cd node-api || exit
     npm run dev
     cd - || exit
 }
 
-# Função para executar o modo de desenvolvimento do Python
-dev_python() {
-    echo "Iniciando servidor Python no modo de desenvolvimento..."
+# Função para executar o servidor Python
+start_python() {
+    echo "Iniciando servidor Python..."
+    # Ativa o ambiente virtual antes de rodar o uvicorn
+    activate_venv
     
-    # Cria e ativa o ambiente virtual
-    python -m venv .venv
-
-    # Verifica o sistema operacional para ativar o ambiente virtual corretamente
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-        # Para Windows
-        source .venv/Scripts/activate
-    else
-        # Para Linux/Mac
-        source .venv/bin/activate
-    fi
-
     cd python-llm || exit
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 }
@@ -56,18 +63,18 @@ case $1 in
         install_node
         install_python
         ;;
-    dev-node)
-        dev_node
+    start-node)
+        start_node
         ;;
-    dev-python)
-        dev_python
+    start-python)
+        start_python
         ;;
     *)
         echo "Comando inválido. Use um dos seguintes:"
         echo "  install-node     - Instala dependências do Node.js"
-        echo "  install-python   - Instala dependências do Python"
+        echo "  install-python   - Instala dependências do Python no ambiente virtual"
         echo "  install          - Instala todas as dependências"
-        echo "  dev-node         - Inicia o servidor Node.js no modo dev"
-        echo "  dev-python       - Inicia o servidor Python no modo dev"
+        echo "  start-node       - Inicia o servidor Node.js"
+        echo "  start-python     - Inicia o servidor Python"
         ;;
 esac

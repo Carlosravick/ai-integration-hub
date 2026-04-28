@@ -3,3 +3,5 @@ uvicorn==0.34.0
 langchain==0.3.14
 langchain-openai>=0.2,<0.3
 langchain-community>=0.3,<0.4
+huggingface_hub>=1.0
+python-dotenv>=1.0
