@@ -8,7 +8,6 @@ const tasksRepository = new TasksRepository();
 const SUPPORTED_LANGS = ["pt", "en", "es"];
 const PYTHON_API_URL = "http://localhost:8000";
 
-// POST: Cria uma tarefa e solicita resumo ao serviço Python
 router.post("/", async (req: Request, res: Response): Promise<any> => {
   try {
     const { text, lang } = req.body;
@@ -21,20 +20,11 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ error: 'Language not supported' });
     }
 
-    // Cria a "tarefa" no banco de dados (JSON)
     const task = await tasksRepository.createTask(text, lang);
 
-    // Solicita o resumo do texto ao serviço Python
     try {
-      const response = await axios.post(`${PYTHON_API_URL}/summarize`, {
-        text,
-        lang
-      });
-      
-      const summary = response.data.summary;
-      
-      // Atualiza a tarefa com o resumo retornado pela IA
-      const updatedTask = await tasksRepository.updateTaskSummary(task.id, summary);
+      const response = await axios.post(`${PYTHON_API_URL}/summarize`, { text, lang });
+      const updatedTask = await tasksRepository.updateTaskSummary(task.id, response.data.summary);
       
       return res.status(201).json({
         message: "Tarefa criada com sucesso!",
@@ -44,7 +34,7 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
       console.error("Erro no serviço Python:", pythonError);
       return res.status(502).json({ 
         error: "Ocorreu um erro ao comunicar com o serviço de IA.",
-        task: task // Retorna a tarefa salva (sem resumo) em caso de erro na IA
+        task
       });
     }
   } catch (error) {
@@ -53,7 +43,6 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-// GET: Lista todas as tarefas
 router.get("/", async (req: Request, res: Response): Promise<any> => {
   try {
     const tasks = await tasksRepository.getAllTasks();
@@ -63,7 +52,6 @@ router.get("/", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-// GET: Busca uma tarefa específica por ID
 router.get("/:id", async (req: Request, res: Response): Promise<any> => {
   try {
     const id = parseInt(req.params.id);
@@ -82,7 +70,6 @@ router.get("/:id", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-// DELETE: Remove uma tarefa por ID
 router.delete("/:id", async (req: Request, res: Response): Promise<any> => {
   try {
     const id = parseInt(req.params.id);

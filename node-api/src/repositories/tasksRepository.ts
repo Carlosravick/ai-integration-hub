@@ -8,7 +8,6 @@ export interface Task {
   lang: string;
 }
 
-// tasks.json será salvo na raiz do node-api (junto ao package.json)
 const FILE_PATH = path.resolve(process.cwd(), 'tasks.json');
 
 export class TasksRepository {
@@ -18,7 +17,6 @@ export class TasksRepository {
       return JSON.parse(data);
     } catch (error: any) {
       if (error.code === 'ENOENT') {
-        // Se o arquivo não existe, retorna array vazio
         return [];
       }
       throw error;
@@ -33,12 +31,7 @@ export class TasksRepository {
     const tasks = await this.readTasks();
     const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
     
-    const task: Task = {
-      id: newId,
-      text,
-      summary: null,
-      lang
-    };
+    const task: Task = { id: newId, text, summary: null, lang };
     
     tasks.push(task);
     await this.writeTasks(tasks);

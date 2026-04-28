@@ -5,7 +5,6 @@ from langchain.prompts import PromptTemplate
 
 class LLMService:
     def __init__(self):
-        # Aqui assumimos que há uma variável de ambiente HF_TOKEN configurada.
         self.client = InferenceClient(
             model="Qwen/Qwen2.5-72B-Instruct",
             token=os.getenv("HF_TOKEN"),
