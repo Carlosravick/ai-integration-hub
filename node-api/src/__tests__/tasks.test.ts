@@ -3,7 +3,7 @@ import app from '../app';
 import fs from 'fs/promises';
 import path from 'path';
 
-// Mock do axios para simular o serviço Python
+// Isolamos o serviço Python mockando o axios para evitar dependência de rede durante os testes
 jest.mock('axios', () => ({
   post: jest.fn(),
 }));
@@ -13,12 +13,12 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 const TASKS_FILE = path.resolve(process.cwd(), 'tasks.json');
 
-// Limpa o arquivo de tarefas antes de cada teste
+// Garante um estado limpo no arquivo 'tasks.json' antes de cada teste para evitar interferência entre os cenários
 beforeEach(async () => {
   await fs.writeFile(TASKS_FILE, '[]', 'utf-8');
 });
 
-// Remove o arquivo de tarefas após os testes
+// Remove o arquivo de banco de dados temporário para não deixar rastros no ambiente pós-testes
 afterAll(async () => {
   try {
     await fs.unlink(TASKS_FILE);
