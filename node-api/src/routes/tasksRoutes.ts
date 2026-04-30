@@ -8,7 +8,7 @@ const tasksRepository = new TasksRepository();
 const SUPPORTED_LANGS = ["pt", "en", "es"];
 const PYTHON_API_URL = "http://localhost:8000";
 
-router.post("/", async (req: Request, res: Response): Promise<any> => {
+router.post("/", async (req: Request, res: Response) => {
   try {
     const { text, lang } = req.body;
     
@@ -43,7 +43,7 @@ router.post("/", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-router.get("/", async (req: Request, res: Response): Promise<any> => {
+router.get("/", async (req: Request, res: Response) => {
   try {
     const tasks = await tasksRepository.getAllTasks();
     return res.json(tasks);
@@ -52,7 +52,7 @@ router.get("/", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-router.get("/:id", async (req: Request, res: Response): Promise<any> => {
+router.get("/:id", async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
@@ -70,7 +70,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-router.delete("/:id", async (req: Request, res: Response): Promise<any> => {
+router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
